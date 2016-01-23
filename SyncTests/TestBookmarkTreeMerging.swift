@@ -68,9 +68,7 @@ private func getBrowserDBForFile(filename: String, files: FileAccessor) -> Brows
     return db
 }
 
-class TestBookmarkTreeMerging: XCTestCase {
-    let files = MockFiles()
-
+class SaneTestCase: XCTestCase {
     // This is how to make an assertion failure stop the current test function
     // but continue with other test functions in the same test case.
     // See http://stackoverflow.com/a/27016786/22003
@@ -79,6 +77,10 @@ class TestBookmarkTreeMerging: XCTestCase {
         defer { self.continueAfterFailure = true }
         super.invokeTest()
     }
+}
+
+class TestBookmarkTreeMerging: SaneTestCase {
+    let files = MockFiles()
 
     override func tearDown() {
         do {
