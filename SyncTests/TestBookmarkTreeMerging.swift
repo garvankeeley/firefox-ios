@@ -364,3 +364,31 @@ class TestBookmarkTreeMerging: SaneTestCase {
         bookmarks.local.db.assertQueryReturns("SELECT faviconID FROM \(TableBookmarksMirror) WHERE bmkUri = 'http://example.org/'", int: 11)
     }
 }
+
+class TestMergedTree: SaneTestCase {
+    func testInitialState() {
+        let children = BookmarkRoots.RootChildren.map { BookmarkTreeNode.Unknown(guid: $0) }
+        let root = BookmarkTreeNode.Folder(guid: BookmarkRoots.RootGUID, children: children)
+        let tree = MergedTree(mirrorRoot: root)
+        XCTAssertTrue(tree.root.hasDecidedChildren)
+
+        if case let .Folder(guid, unmergedChildren) = tree.root.asUnmergedTreeNode() {
+            XCTAssertEqual(guid, BookmarkRoots.RootGUID)
+            XCTAssertEqual(unmergedChildren, children)
+        } else {
+            XCTFail("Root should start as Folder.")
+        }
+
+        // We haven't processed the children.
+        XCTAssertNil(tree.root.mergedChildren)
+        XCTAssertTrue(tree.root.asMergedTreeNode().isUnknown)
+
+        // Simulate a merge.
+        let mergedRoots = children.map { MergedTreeNode(guid: $0.recordGUID, mirror: $0, structureState: MergeState.Unchanged) }
+        tree.root.mergedChildren = mergedRoots
+
+        // Now we have processed children.
+        XCTAssertNotNil(tree.root.mergedChildren)
+        XCTAssertFalse(tree.root.asMergedTreeNode().isUnknown)
+    }
+}
