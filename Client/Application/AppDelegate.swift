@@ -293,7 +293,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // readable from extensions, so they can just use the cached identifier.
         let defaults = NSUserDefaults(suiteName: AppInfo.sharedContainerIdentifier())!
         defaults.registerDefaults(["UserAgent": firefoxUA])
-        FaviconFetcher.userAgent = firefoxUA
+
+        // Some sites will only serve HTML that points to .ico files.
+        // The FaviconFetcher is explicitly for getting high-res icons, so use the desktop user agent.
+        FaviconFetcher.userAgent = UserAgent.desktopUserAgent()
         SDWebImageDownloader.sharedDownloader().setValue(firefoxUA, forHTTPHeaderField: "User-Agent")
 
         // Record the user agent for use by search suggestion clients.
