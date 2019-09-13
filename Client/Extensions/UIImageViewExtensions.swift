@@ -44,16 +44,19 @@ public extension UIImageView {
         let domain = url.domainURL.absoluteString
         if let color = FaviconFetcher.colors[domain] {
             self.backgroundColor = color
-            completionBlock?(color)
+            completionBlock?(self.backgroundColor!)
         } else {
             image.getColors(scaleDownSize: CGSize(width: 25, height: 25)) {colors in
                 let isSame = [colors.primary, colors.secondary, colors.detail].every { $0 == colors.primary }
-                if isSame {
+                if isSame || colors.background == nil {
                     completionBlock?(UIColor.Photon.White100)
                     FaviconFetcher.colors[domain] = UIColor.Photon.White100
                 } else {
-                    completionBlock?(colors.background)
-                    FaviconFetcher.colors[domain] = colors.background
+                    let startColor = colors.background!
+                    let darkenFactor = CGFloat(1.2)
+                    let c = UIColor(red: startColor.cgColor.components[0] / darkenFactor, green: startColor.cgColor.components[1] / darkenFactor, blue: startColor.cgColor.components[2] / darkenFactor, alpha: 1)
+                    completionBlock?(c)
+                    FaviconFetcher.colors[domain] = c
                 }
             }
         }
