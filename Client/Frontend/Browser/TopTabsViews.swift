@@ -187,7 +187,7 @@ class TopTabCell: UICollectionViewCell, PrivateModeUI {
         if let siteURL = tab.url?.displayURL {
             self.favicon.setIcon(tab.displayFavicon, forURL: siteURL, completed: { (color, url) in
                 if siteURL == url {
-                    self.favicon.image = self.favicon.image?.createScaled(CGSize(width: 15, height: 15))
+                    //self.favicon.image = self.favicon.image?.createScaled(CGSize(width: 15, height: 15))
                     self.favicon.backgroundColor = color == .clear ? .white : color
                     self.favicon.contentMode = .center
                 }

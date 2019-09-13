@@ -14,7 +14,7 @@ private struct TopSiteCellUX {
     static let CellCornerRadius: CGFloat = 4
     static let TitleOffset: CGFloat = 5
     static let OverlayColor = UIColor(white: 0.0, alpha: 0.25)
-    static let IconSizePercent: CGFloat = 0.8
+    static let IconSizePercent: CGFloat = 1.0
     static let BorderColor = UIColor(white: 0, alpha: 0.1)
     static let BorderWidth: CGFloat = 0.5
     static let PinIconSize: CGFloat = 12
