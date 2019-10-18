@@ -25,6 +25,8 @@ private let REQUEST_KEY_PRIVILEGED = "privileged"
  doing this is not clear as these requests should work fine as regular URLRequest().
  **/
 class PrivilegedRequest: NSMutableURLRequest {
+    static var urls = LRUCache<String>()
+
     override init(url: URL, cachePolicy: NSURLRequest.CachePolicy, timeoutInterval: TimeInterval) {
         func getUrl() -> URL {
             if InternalURL.isValid(url: url), let result = InternalURL.authorize(url: url) {
@@ -42,7 +44,10 @@ class PrivilegedRequest: NSMutableURLRequest {
     }
 
     fileprivate func setPrivileged() {
-        URLProtocol.setProperty(true, forKey: REQUEST_KEY_PRIVILEGED, in: self)
+        guard let url = url else { return }
+        let id = UUID().hashValue
+        PrivilegedRequest.urls.set(key: id, value: url.absoluteString)
+        URLProtocol.setProperty(id, forKey: REQUEST_KEY_PRIVILEGED, in: self)
     }
 }
 
@@ -51,6 +56,9 @@ extension URLRequest {
         if let url = url, let internalUrl = InternalURL(url) {
             return internalUrl.isAuthorized
         }
-        return URLProtocol.property(forKey: REQUEST_KEY_PRIVILEGED, in: self) != nil
+        if let id = URLProtocol.property(forKey: REQUEST_KEY_PRIVILEGED, in: self) as? Int, let u = PrivilegedRequest.urls.get(key: id), u == url?.absoluteString {
+            return true
+        }
+        return false
     }
 }

@@ -53,3 +53,80 @@ open class PerformanceTimer {
         }
     }
 }
+
+public class LinkedList<T> {
+    class Node {
+        var value: T
+        var next: Node? = nil
+
+        init(value: T) {
+            self.value = value
+        }
+    }
+
+    private var head: Node? = nil
+    private var tail: Node? = nil
+    public private(set) var count = 0
+
+    public init() {}
+
+    public func append(value: T) {
+        count += 1
+        let node = Node(value: value)
+        if let tail = tail {
+            tail.next = node
+            self.tail = node
+        } else {
+            head = node
+            tail = node
+            assert(count == 1)
+        }
+    }
+
+    public func popFront() -> T? {
+        if count > 0 {
+            count -= 1
+        }
+        let val = head?.value
+        if head === tail {
+            assert(count == 0)
+            head = nil
+            tail = nil
+        } else if let head = head {
+            assert(count > 0)
+            self.head = head.next
+        }
+        return val
+    }
+}
+
+public class LRUCache<T> {
+    class Node {
+        var data: T? = nil
+        var key = 0
+    }
+
+    let maxSize: UInt
+    var queue = LinkedList<Node>()
+    var dict = [Int: Node]()
+
+    public init(size: UInt = 1000) {
+        maxSize = size
+    }
+
+    public func get(key: Int) -> T? {
+        return dict[key]?.data
+    }
+
+    public func set(key: Int, value: T) {
+        let node = Node()
+        node.data = value
+        node.key = key
+        if queue.count >= maxSize {
+            let oldNode = queue.popFront()
+            dict[oldNode!.key] = nil
+        }
+        queue.append(value: node)
+        dict[key] = node
+    }
+}

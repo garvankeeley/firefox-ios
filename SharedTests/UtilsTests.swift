@@ -10,6 +10,25 @@ import XCTest
  * Test for our own utils.
  */
 class UtilsTests: XCTestCase {
+    func testLinkedList() {
+        let ll = LinkedList<Int>()
+        ll.append(value: 1)
+        XCTAssertTrue(ll.popFront()! == 1)
+        XCTAssertTrue(ll.popFront() == nil)
+        XCTAssertTrue(ll.count == 0)
+        ll.append(value: 1)
+        ll.append(value: 2)
+        ll.append(value: 3)
+        XCTAssertTrue(ll.popFront()! == 1)
+        XCTAssertTrue(ll.popFront()! == 2)
+        XCTAssertTrue(ll.popFront()! == 3)
+        XCTAssertTrue(ll.popFront() == nil)
+        XCTAssertTrue(ll.count == 0)
+        
+
+
+    }
+
     func testMapUtils() {
         let m: [String: Int] = ["foo": 123, "bar": 456]
         let f: (Int) -> Int? = { v in
