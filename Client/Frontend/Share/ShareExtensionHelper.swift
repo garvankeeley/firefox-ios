@@ -5,8 +5,52 @@
 import Foundation
 import Shared
 import OnePasswordExtension
+import Storage
 
 private let log = Logger.browserLogger
+
+class ShareDeviceAction: UIActivity {
+    var _activityTitle: String
+    var _activityImage: UIImage?
+    var activityItems = [Any]()
+    var action: ([Any]) -> Void
+
+    init(title: String, image: UIImage?, performAction: @escaping ([Any]) -> Void) {
+        _activityTitle = title
+        _activityImage = image
+        action = performAction
+        super.init()
+    }
+
+    override var activityTitle: String? {
+        return _activityTitle
+    }
+
+    override var activityImage: UIImage? {
+        return _activityImage
+    }
+
+    override var activityType: UIActivity.ActivityType? {
+        return UIActivity.ActivityType(rawValue: "org.mozilla.firefoxApp.activity")
+    }
+
+    override class var activityCategory: UIActivity.Category {
+        return .share
+    }
+
+    override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
+        return true
+    }
+
+    override func prepare(withActivityItems activityItems: [Any]) {
+        self.activityItems = activityItems
+    }
+
+    override func perform() {
+        action(activityItems)
+        activityDidFinish(true)
+    }
+}
 
 class ShareExtensionHelper: NSObject {
     fileprivate weak var selectedTab: Tab?
@@ -16,6 +60,8 @@ class ShareExtensionHelper: NSObject {
     fileprivate let browserFillIdentifier = "org.appextension.fill-browser-action"
 
     fileprivate func isFile(url: URL) -> Bool { url.scheme == "file" }
+    fileprivate let profile = BrowserProfile(localName: "profile")
+    var devicesActions = [ShareDeviceAction]()
 
     // Can be a file:// or http(s):// url
     init(url: URL, tab: Tab?) {
@@ -39,9 +85,18 @@ class ShareExtensionHelper: NSObject {
             activityItems.append(TitleActivityItemProvider(title: title))
         }
         activityItems.append(self)
+        
+        if let devices = self.profile.remoteClientsAndTabs.getRemoteDevices().value.successValue {
+            for device in devices {
+                let deviceShareItem = ShareDeviceAction(title: device.name, image: UIImage(named: "faviconFox")) { sharedItems in
+                    _ = self.profile.sendItem(ShareItem(url: self.url.absoluteString, title: nil, favicon: nil), toDevices: [device])
+                }
+                devicesActions.append(deviceShareItem)
+            }
+        }
 
-        let activityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-
+        let activityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: devicesActions)
+        
         // Hide 'Add to Reading List' which currently uses Safari.
         // We would also hide View Later, if possible, but the exclusion list doesn't currently support
         // third-party activity types (rdar://19430419).
