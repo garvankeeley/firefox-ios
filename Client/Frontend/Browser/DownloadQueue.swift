@@ -68,6 +68,14 @@ class HTTPDownload: Download {
 
     private var resumeData: Data?
 
+    // Used to avoid name spoofing using Unicode RTL char to change file extension
+    public static func stripUnicode(fromFilename string: String) -> String {
+        let str = (string as NSString).deletingPathExtension
+        let ext = (string as NSString).pathExtension.lowercased()
+        let alpha = str.components(separatedBy: CharacterSet.alphanumerics.inverted).joined().lowercased()
+        return alpha + "." + ext
+     }
+
     init(preflightResponse: URLResponse, request: URLRequest) {
         self.preflightResponse = preflightResponse
         self.request = request
@@ -75,7 +83,7 @@ class HTTPDownload: Download {
         super.init()
 
         if let filename = preflightResponse.suggestedFilename {
-            self.filename = filename
+            self.filename = HTTPDownload.stripUnicode(fromFilename: filename)
         }
 
         if let mimeType = preflightResponse.mimeType {
