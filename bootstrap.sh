@@ -25,7 +25,7 @@ if [ ! -z "$XCS_BOT_ID"  ]; then
   CARTHAGE_VERBOSE="--verbose"
 fi
 
-carthage bootstrap $CARTHAGE_VERBOSE --platform ios --color auto --cache-builds
+./carthage_command.sh
 
 # Install Node.js dependencies and build user scripts
 
